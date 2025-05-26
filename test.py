@@ -4,13 +4,13 @@ import numpy as np
 import tenseal as ts
 from copy import deepcopy  
 
-NUM_HOSPITALS = 5
+NUM_HOSPITALS = 100
 
 # Cargar el fichero
 fichero = open("/home/enotari/Escritorio/data.pkl", "rb")
 normalized_list = pickle.load(fichero)
 
-########## SIMULACIÓN CLIENTE ##########
+print("\n########## SIMULACIÓN CLIENTE ##########\n")
 
 # Crear contexto CKKS para cifrado homomórfico
 context = ts.context(
@@ -29,8 +29,18 @@ total_start = time.time()
 encrypt_start = time.time()
 encrypted_data = []
 
-#normalized_list = [[[1., 2., 3.], [4., 5., 6.]], [[7., 8., 9.], [10., 11., 12.]]]
-#print(f"Normalized List: {normalized_list[:NUM_HOSPITALS]}")
+num_rows = 8
+num_cols = 8
+
+normalized_list = [
+    [
+        [float(h * num_rows * num_cols + i * num_cols + j + 1) for j in range(num_cols)]
+        for i in range(num_rows)
+    ]
+    for h in range(NUM_HOSPITALS)
+]
+
+#print("normalized_list = ", normalized_list)
 
 for matrix in normalized_list[:NUM_HOSPITALS]:
     encrypted_matrix = []
@@ -58,18 +68,21 @@ decrypt_end = time.time()
 total_end = time.time()
 
 # Mostrar resultados
-print(f"\nTiempo de encriptación : {encrypt_end - encrypt_start:.4f} segundos")
+print(f"Tiempo de encriptación : {encrypt_end - encrypt_start:.4f} segundos")
 print(f"Tiempo de desencriptación : {decrypt_end - decrypt_start:.4f} segundos")
 print(f"Tiempo total : {total_end - total_start:.4f} segundos")
 
-########## SIMULACIÓN SERVIDOR ##########
+
+print("\n########## SIMULACIÓN SERVIDOR ##########")
+
+print("\n----- Ponderación con datos cifrados -----")
 
 encrypted_subset = encrypted_data[:NUM_HOSPITALS]
 
 num_rows_per_matrix = len(encrypted_subset[0])
 #print(f"\nNum matrix = {num_rows_per_matrix}")
 
-ponderation_start = time.time()
+ponderation_encrypted_start = time.time()
 
 # Inicializar suma ponderada con la primera matriz
 encrypted_sum = [
@@ -81,15 +94,38 @@ for matrix in encrypted_subset[1:]:
     for i, vec in enumerate(matrix):
         encrypted_sum[i] += vec * (1 / NUM_HOSPITALS)
 
-ponderation_end = time.time()
+ponderation_encrypted_end = time.time()
 
 # Desencriptar resultados
 decrypted = [vec.decrypt() for vec in encrypted_sum]
-decrypted_weighted = decrypted  # Alias para claridad
 
-
-print("\nMatriz ponderada (desencriptada para comprobación):")
-for row in decrypted_weighted:
-    print(row)
+# print("\nMatriz ponderada (desencriptada para comprobación):")
+# for row in decrypted:
+#     print(row)
     
-print(f"\nTiempo total ponderación : {ponderation_end - ponderation_start:.4f} segundos")
+print(f"Tiempo total ponderación encriptada : {ponderation_encrypted_end - ponderation_encrypted_start:.4f} segundos")
+
+print("\n----- Ponderación con datos en claro -----")
+
+decrypted_subset = normalized_list[:NUM_HOSPITALS]
+
+ponderation_decrypted_start = time.time()
+
+decrypted_sum = [
+    [x * (1 / NUM_HOSPITALS) for x in vec]
+    for vec in deepcopy(decrypted_subset[0])
+]
+
+for matrix in decrypted_subset[1:]:
+    for i, vec in enumerate(matrix):
+        for j, val in enumerate(vec):
+            decrypted_sum[i][j] += val * (1 / NUM_HOSPITALS)
+
+        
+ponderation_decrypted_end = time.time()
+
+# print("\nMatriz ponderada:")
+# for row in decrypted_sum:
+#     print(row)
+
+print(f"Tiempo total ponderación desencriptada : {ponderation_decrypted_end - ponderation_decrypted_start:.16f} segundos")

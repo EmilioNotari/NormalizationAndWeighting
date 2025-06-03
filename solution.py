@@ -4,11 +4,9 @@ import tenseal as ts
 from copy import deepcopy
 
 # Número de hospitales
-NUM_HOSPITALS = 150
+NUM_HOSPITALS = 1
 
-# Vector de ponderaciones aleatorias de 2 decimales y suma ≈ 1
 weights = np.random.dirichlet(np.ones(NUM_HOSPITALS))
-
 
 # Crear contexto CKKS
 context = ts.context(

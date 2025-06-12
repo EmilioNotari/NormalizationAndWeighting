@@ -3,9 +3,9 @@ import numpy as np
 import tenseal as ts
 
 # ======= Configuración inicial =======
-NUM_HOSPITALS = 2
-num_rows = 2
-num_cols = 2
+NUM_HOSPITALS =20
+num_rows = 8
+num_cols = 8
 
 # ======= Ponderaciones =======
 weights = np.random.dirichlet(np.ones(NUM_HOSPITALS))

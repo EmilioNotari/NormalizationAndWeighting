@@ -3,9 +3,9 @@ import numpy as np
 import tenseal as ts
 
 # ======= Configuración inicial =======
-NUM_HOSPITALS =20
-num_rows = 8
-num_cols = 8
+NUM_HOSPITALS =2
+num_rows = 448
+num_cols = 448
 
 # ======= Ponderaciones =======
 weights = np.random.dirichlet(np.ones(NUM_HOSPITALS))
@@ -29,7 +29,7 @@ normalized_list = [
     np.random.rand(num_rows, num_cols).tolist()
     for _ in range(NUM_HOSPITALS)
 ]
-print(f"NORMALIZED LIST {normalized_list}")
+#print(f"NORMALIZED LIST {normalized_list}")
 
 # ======= TIEMPO TOTAL CIFRADO (ponderación - cifrado - suma) =======
 total_start = time.time()
@@ -41,7 +41,7 @@ for h, matrix in enumerate(normalized_list):
     plain_sum += np.array(matrix) * weights[h]
 plain_sum_end = time.time()
 
-print(f"PLAIN_SUM {plain_sum}")
+#print(f"PLAIN_SUM {plain_sum}")
 
 # ======= Cifrado de matrices ya ponderadas =======
 encrypt_start = time.time()
@@ -71,7 +71,7 @@ for vec in encrypted_sum:
 decrypted_result = [vec.decrypt() for vec in encrypted_sum]
 decrypted_result_np = np.array(decrypted_result)
 
-print(f"MATRIZ RESULTANTE {decrypted_result}")
+#print(f"MATRIZ RESULTANTE {decrypted_result}")
 
 # ======= Comparación con resultado en claro =======
 max_error = np.max(np.abs(decrypted_result_np - plain_sum))
@@ -85,3 +85,5 @@ print(f"Tiempo total:                    {total_end - total_start:.4f} s")
 
 print(f"\nMáximo error absoluto:           {max_error:.8f}")
 print(f"Error medio absoluto:            {mean_error:.8f}")
+
+
